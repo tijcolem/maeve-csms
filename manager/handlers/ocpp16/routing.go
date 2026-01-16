@@ -270,6 +270,13 @@ func NewRouter(emitter transport.Emitter,
 				ResponseSchema: "ocpp16/TriggerMessageResponse.json",
 				Handler:        TriggerMessageResultHandler{},
 			},
+			"UpdateFirmware": {
+				NewRequest:     func() ocpp.Request { return new(ocpp16.UpdateFirmwareJson) },
+				NewResponse:    func() ocpp.Response { return new(ocpp16.UpdateFirmwareResponseJson) },
+				RequestSchema:  "ocpp16/UpdateFirmware.json",
+				ResponseSchema: "ocpp16/UpdateFirmwareResponse.json",
+				Handler:        UpdateFirmwareResultHandler{},
+			},
 		},
 	}
 }
@@ -282,6 +289,7 @@ func NewCallMaker(e transport.Emitter) *handlers.OcppCallMaker {
 			reflect.TypeOf(&ocpp16.ChangeConfigurationJson{}):    "ChangeConfiguration",
 			reflect.TypeOf(&ocpp16.TriggerMessageJson{}):         "TriggerMessage",
 			reflect.TypeOf(&ocpp16.RemoteStartTransactionJson{}): "RemoteStartTransaction",
+			reflect.TypeOf(&ocpp16.UpdateFirmwareJson{}):         "UpdateFirmware",
 		},
 	}
 }
