@@ -47,3 +47,7 @@ func (r Registration) Bind(req *http.Request) error {
 func (r Location) Bind(req *http.Request) error {
 	return nil
 }
+
+func (c ChargeStationFirmwareUpdate) Bind(r *http.Request) error {
+return nil
+}

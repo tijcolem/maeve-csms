@@ -4,7 +4,8 @@ package api
 
 import (
 	"fmt"
-	handlers "github.com/thoughtworks/maeve-csms/manager/handlers/ocpp201"
+	handlers "github.com/thoughtworks/maeve-csms/manager/handlers"
+	handlers201 "github.com/thoughtworks/maeve-csms/manager/handlers/ocpp201"
 	"github.com/thoughtworks/maeve-csms/manager/ocpi"
 	"net/http"
 	"time"
@@ -17,22 +18,26 @@ import (
 )
 
 type Server struct {
-	store   store.Engine
-	clock   clock.PassiveClock
-	swagger *openapi3.T
-	ocpi    ocpi.Api
+	store           store.Engine
+	clock           clock.PassiveClock
+	swagger         *openapi3.T
+	ocpi            ocpi.Api
+	ocpp16CallMaker handlers.CallMaker
+	ocpp201CallMaker handlers.CallMaker
 }
 
-func NewServer(engine store.Engine, clock clock.PassiveClock, ocpi ocpi.Api) (*Server, error) {
+func NewServer(engine store.Engine, clock clock.PassiveClock, ocpi ocpi.Api, ocpp16CallMaker, ocpp201CallMaker handlers.CallMaker) (*Server, error) {
 	swagger, err := GetSwagger()
 	if err != nil {
 		return nil, err
 	}
 	return &Server{
-		store:   engine,
-		clock:   clock,
-		ocpi:    ocpi,
-		swagger: swagger,
+		store:            engine,
+		clock:            clock,
+		ocpi:             ocpi,
+		swagger:          swagger,
+		ocpp16CallMaker:  ocpp16CallMaker,
+		ocpp201CallMaker: ocpp201CallMaker,
 	}, nil
 }
 
@@ -97,7 +102,7 @@ func (s *Server) InstallChargeStationCertificates(w http.ResponseWriter, r *http
 
 	var certs []*store.ChargeStationInstallCertificate
 	for _, cert := range req.Certificates {
-		certId, err := handlers.GetCertificateId(cert.Certificate)
+		certId, err := handlers201.GetCertificateId(cert.Certificate)
 		if err != nil {
 			_ = render.Render(w, r, ErrInvalidRequest(fmt.Errorf("invalid certificate: %w", err)))
 			return
@@ -124,6 +129,42 @@ func (s *Server) InstallChargeStationCertificates(w http.ResponseWriter, r *http
 		_ = render.Render(w, r, ErrInternalError(err))
 		return
 	}
+}
+
+func (s *Server) UpdateChargeStationFirmware(w http.ResponseWriter, r *http.Request, csId string) {
+	req := new(ChargeStationFirmwareUpdate)
+	if err := render.Bind(r, req); err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	// Try OCPP 2.0.1 first if request has OCPP 2.0.1-specific fields
+	if req.RequestId != nil || req.InstallDateTime != nil {
+		if s.ocpp201CallMaker != nil {
+			err := s.sendOCPP201FirmwareUpdate(r.Context(), csId, req)
+			if err != nil {
+				_ = render.Render(w, r, ErrInternalError(err))
+				return
+			}
+		} else {
+			_ = render.Render(w, r, ErrInvalidRequest(fmt.Errorf("OCPP 2.0.1 not configured")))
+			return
+		}
+	} else {
+		// Try OCPP 1.6
+		if s.ocpp16CallMaker != nil {
+			err := s.sendOCPP16FirmwareUpdate(r.Context(), csId, req)
+			if err != nil {
+				_ = render.Render(w, r, ErrInternalError(err))
+				return
+			}
+		} else {
+			_ = render.Render(w, r, ErrInvalidRequest(fmt.Errorf("OCPP 1.6 not configured")))
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (s *Server) LookupChargeStationAuth(w http.ResponseWriter, r *http.Request, csId string) {

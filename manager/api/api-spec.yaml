@@ -158,6 +158,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Status"
+  /cs/{csId}/firmware:
+    post:
+      summary: "Trigger a firmware update"
+      description: |
+        Triggers a firmware update on the charge station
+      operationId: "updateChargeStationFirmware"
+      parameters:
+        - name: "csId"
+          in: "path"
+          description: "The charge station identifier"
+          required: true
+          schema:
+            type: "string"
+            maxLength: 28
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ChargeStationFirmwareUpdate"
+      responses:
+        "201":
+          description: "Created"
+        default:
+          description: "Unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Status"
   /token:
     post:
       summary: "Create/update an authorization token"
@@ -460,6 +489,36 @@ components:
             - "SignV2GCertificate"
             - "SignChargingStationCertificate"
             - "SignCombinedCertificate"
+    ChargeStationFirmwareUpdate:
+      type: "object"
+      description: "Firmware update request"
+      required:
+        - "location"
+        - "retrieveDateTime"
+      properties:
+        location:
+          type: "string"
+          format: "uri"
+          description: "URL from which the firmware can be downloaded"
+        retrieveDateTime:
+          type: "string"
+          format: "date-time"
+          description: "Date and time at which the charge station should retrieve the firmware"
+        installDateTime:
+          type: "string"
+          format: "date-time"
+          description: "Date and time at which the charge station should install the firmware (OCPP 2.0.1 only)"
+        retries:
+          type: "integer"
+          minimum: 0
+          description: "Number of retries if download fails"
+        retryInterval:
+          type: "integer"
+          minimum: 0
+          description: "Interval in seconds between retries"
+        requestId:
+          type: "integer"
+          description: "Unique request identifier (OCPP 2.0.1 only)"
     Token:
       type: "object"
       description: "An authorization token"

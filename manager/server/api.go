@@ -7,9 +7,13 @@ import (
 	"github.com/thoughtworks/maeve-csms/manager/adminui"
 	"github.com/thoughtworks/maeve-csms/manager/api"
 	"github.com/thoughtworks/maeve-csms/manager/config"
+	"github.com/thoughtworks/maeve-csms/manager/handlers"
+	"github.com/thoughtworks/maeve-csms/manager/handlers/ocpp16"
+	"github.com/thoughtworks/maeve-csms/manager/handlers/ocpp201"
 	"github.com/thoughtworks/maeve-csms/manager/ocpi"
 	"github.com/thoughtworks/maeve-csms/manager/services"
 	"github.com/thoughtworks/maeve-csms/manager/store"
+	"github.com/thoughtworks/maeve-csms/manager/transport"
 	"github.com/unrolled/secure"
 	"k8s.io/utils/clock"
 	"net/http"
@@ -22,8 +26,16 @@ import (
 	"github.com/thoughtworks/maeve-csms/manager/templates"
 )
 
-func NewApiHandler(settings config.ApiSettings, engine store.Engine, ocpi ocpi.Api, csCertProvider services.ChargeStationCertificateProvider) http.Handler {
-	apiServer, err := api.NewServer(engine, clock.RealClock{}, ocpi)
+func NewApiHandler(settings config.ApiSettings, engine store.Engine, ocpi ocpi.Api, csCertProvider services.ChargeStationCertificateProvider, emitter transport.Emitter) http.Handler {
+	// Create CallMakers for both OCPP versions
+	var ocpp16CallMaker handlers.CallMaker
+	var ocpp201CallMaker handlers.CallMaker
+	if emitter != nil {
+		ocpp16CallMaker = ocpp16.NewCallMaker(emitter)
+		ocpp201CallMaker = ocpp201.NewCallMaker(emitter)
+	}
+
+	apiServer, err := api.NewServer(engine, clock.RealClock{}, ocpi, ocpp16CallMaker, ocpp201CallMaker)
 	if err != nil {
 		panic(err)
 	}
