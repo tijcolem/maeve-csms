@@ -210,6 +210,51 @@ func (fst *FirmwareStatusTracker) GetLastStatus() FirmwareStatus {
 	return fst.statuses[len(fst.statuses)-1]
 }
 
+// sendUpdateFirmwareRequest sends an UpdateFirmware OCPP request via CSMS API
+func sendUpdateFirmwareRequest(t *testing.T, chargeStationID, firmwareURL string, requestID int) error {
+	csmsAPIURL := os.Getenv("CSMS_API_URL")
+	if csmsAPIURL == "" {
+		csmsAPIURL = "http://localhost:9410"
+	}
+
+	// Calculate retrieve and install times
+	retrieveTime := time.Now().Add(30 * time.Second).UTC()
+	installTime := time.Now().Add(2 * time.Minute).UTC()
+
+	// Construct the API request for firmware update
+	request := map[string]interface{}{
+		"location":         firmwareURL,
+		"retrieveDateTime": retrieveTime.Format(time.RFC3339),
+		"installDateTime":  installTime.Format(time.RFC3339),
+		"requestId":        requestID,
+		"retries":          3,
+		"retryInterval":    30,
+	}
+
+	requestJSON, err := json.MarshalIndent(request, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshaling request: %w", err)
+	}
+
+	t.Logf("Sending UpdateFirmware request to %s/api/v0/cs/%s/firmware", csmsAPIURL, chargeStationID)
+	t.Logf("Request body:\n%s", string(requestJSON))
+
+	// Send POST request to the CSMS API
+	apiURL := fmt.Sprintf("%s/api/v0/cs/%s/firmware", csmsAPIURL, chargeStationID)
+	resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(requestJSON))
+	if err != nil {
+		return fmt.Errorf("sending firmware update request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
+	}
+
+	t.Logf("Firmware update request sent successfully")
+	return nil
+}
 
 // monitorFirmwareStatus subscribes to firmware status notifications via MQTT
 func monitorFirmwareStatus(t *testing.T, client mqtt.Client, chargeStationID string, tracker *FirmwareStatusTracker, wg *sync.WaitGroup) error {
