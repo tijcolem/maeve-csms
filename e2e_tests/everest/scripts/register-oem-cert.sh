@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 BEARER_TOKEN="$1"
 PCID="${2}"
 

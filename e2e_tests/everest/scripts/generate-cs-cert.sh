@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 BEARER_TOKEN="$1"
 CS_NAME="${2:-cs001}"
 
@@ -19,7 +19,7 @@ openssl req -new -key "${script_dir}"/../config/certificates/"${CS_NAME}".key \
   -outform DER \
   -sha256
 
-curl -s https://open.plugncharge-test.hubject.com/cpo/simpleenroll/ISO15118-2 \
+curl -s https://open.plugncharge-test.hubject.com/.well-known/cpo/simpleenroll \
   -H 'Accept: application/pkcs7' \
   -H "Authorization: Bearer ${BEARER_TOKEN}" \
   -H 'Content-Type: application/pkcs10' \

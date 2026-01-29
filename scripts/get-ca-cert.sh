@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-
+set -x
 BEARER_TOKEN=$(curl -s https://hubject.stoplight.io/api/v1/projects/cHJqOjk0NTg5/nodes/6bb8b3bc79c2e-authorization-token | jq -r .data | sed -n '/Bearer/s/^.*Bearer //p')
 
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-certs=$(curl -s https://open.plugncharge-test.hubject.com/cpo/cacerts/ISO15118-2 \
+certs=$(curl -s https://open.plugncharge-test.hubject.com/.well-known/cpo/cacerts \
   -H 'Accept: application/pkcs10, application/pkcs7' \
   -H "Authorization: Bearer ${BEARER_TOKEN}" \
   -H 'Content-Transfer-Encoding: application/pkcs10' | openssl enc -base64 -d | openssl pkcs7 -inform DER -print_certs)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 default_csms_dir="${script_dir}"/../../..
 csms_dir="${1:-$default_csms_dir}"

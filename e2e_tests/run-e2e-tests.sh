@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -x 
 # Get the directory where the script is located
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
@@ -19,7 +19,7 @@ start_docker_compose_for_maeve_csms() {
     chmod 755 $CSMS_DIR/config/certificates/csms.key
     export UID=$(id -u)
     export GID=$(id -g)
-    docker-compose up -d
+    docker compose up -d
     if [ $? -eq 0 ]; then
         echo "Docker Compose started successfully"
     else
@@ -43,15 +43,17 @@ start_docker_compose_for_everest() {
 
         echo "Waiting for services to initialize..."
         sleep 10
+        #docker exec -it e2e_tests-manager-1  e2e_tests-manager-1 rm -rf /workspace/dist 
+	#docker cp  /home/ubuntu/dist/ e2e_tests-manager-1:/workspace/
 }
 
 # Function to stop Docker Compose
 stop_docker_compose_for_everest() {
-    cd "$EVEREST_DIR" && docker-compose down
+    cd "$EVEREST_DIR" && docker compose down
 }
 
 stop_docker_compose_for_maeve_csms() {
-    cd "$CSMS_DIR" && docker-compose down
+    cd "$CSMS_DIR" && docker compose down
 }
 
 # Function to check health endpoint

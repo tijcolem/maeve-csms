@@ -3,7 +3,8 @@
 # STAGE 1: build the executable
 FROM golang:1.20-alpine AS builder
 
-RUN apk add --no-cache git openssh ca-certificates
+RUN apk add --no-cache git openssh ca-certificates bash
+
 WORKDIR /src
 
 ARG TARGETARCH
@@ -24,12 +25,13 @@ COPY ./ ./
 RUN --mount=type=cache,target=/root/.cache/go-build/ CGO_ENABLED=0 go build -o /app main.go
 
 # STAGE 2: build the container
-FROM gcr.io/distroless/static:nonroot AS final
+#FROM gcr.io/distroless/static:nonroot AS final
 
-COPY --from=builder /usr/bin/curl /usr/bin/curl
+#COPY --from=builder /usr/bin/curl /usr/bin/curl
+#COPY --from=builder /bin/bash /bin/bash
 
 USER 10000:10000
 
-COPY --from=builder --chown=nonroot:nonroot /app /app
+#COPY --from=builder --chown=nonroot:nonroot /app /app
 
 ENTRYPOINT ["/app"]

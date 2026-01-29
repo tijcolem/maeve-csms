@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -x
 BEARER_TOKEN="$1"
 EMAID="${2}"
 
@@ -24,7 +24,7 @@ openssl req -new -key "${script_dir}"/../config/certificates/"${EMAID}".key \
   -outform DER \
   -sha256
 
-curl -s https://open.plugncharge-test.hubject.com/mo/simpleenroll/ISO15118-2 \
+curl -s https://open.plugncharge-test.hubject.com/.well-known/mo/simpleenroll \
   -H 'Accept: application/pkcs7' \
   -H "Authorization: Bearer ${BEARER_TOKEN}" \
   -H 'Content-Type: application/pkcs10' \
