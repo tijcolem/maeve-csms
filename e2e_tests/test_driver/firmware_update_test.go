@@ -310,7 +310,7 @@ func monitorFirmwareStatus(t *testing.T, client mqtt.Client, chargeStationID str
 func TestFirmwareUpdateOCPP201(t *testing.T) {
 	chargeStationID := os.Getenv("CHARGE_STATION_ID")
 	if chargeStationID == "" {
-		chargeStationID = "cs001"
+		chargeStationID = "cp001"
 	}
 
 	// Check if we should skip this test
