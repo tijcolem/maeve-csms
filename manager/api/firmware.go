@@ -35,6 +35,14 @@ func (s *Server) sendOCPP201FirmwareUpdate(ctx context.Context, csId string, req
 		request.RetryInterval = req.RetryInterval
 	}
 
+	if req.SigningCertificate != nil {
+		request.Firmware.SigningCertificate = req.SigningCertificate
+	}
+
+	if req.Signature != nil {
+		request.Firmware.Signature = req.Signature
+	}
+
 	return s.ocpp201CallMaker.Send(ctx, csId, request)
 }
 

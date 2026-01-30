@@ -167,6 +167,12 @@ type ChargeStationFirmwareUpdate struct {
 
 	// RetryInterval Interval in seconds between retries
 	RetryInterval *int `json:"retryInterval,omitempty"`
+
+	// SigningCertificate Certificate with which the firmware was signed. PEM encoded X.509 certificate (OCPP 2.0.1 only)
+	SigningCertificate *string `json:"signing_certificate,omitempty"`
+
+	// Signature Base64 encoded firmware signature (OCPP 2.0.1 only)
+	Signature *string `json:"signature,omitempty"`
 }
 
 // ChargeStationInstallCertificates The set of certificates to install on the charge station. The certificates will be sent

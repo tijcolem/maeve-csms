@@ -519,6 +519,12 @@ components:
         requestId:
           type: "integer"
           description: "Unique request identifier (OCPP 2.0.1 only)"
+        signing_certificate:
+          type: "string"
+          description: "Certificate with which the firmware was signed. PEM encoded X.509 certificate (OCPP 2.0.1 only)"
+        signature:
+          type: "string"
+          description: "Base64 encoded firmware signature (OCPP 2.0.1 only)"
     Token:
       type: "object"
       description: "An authorization token"

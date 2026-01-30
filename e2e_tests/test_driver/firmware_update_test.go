@@ -223,13 +223,14 @@ func sendUpdateFirmwareRequest(t *testing.T, chargeStationID, firmwareURL string
 
 	// Construct the API request for firmware update
 	request := map[string]interface{}{
-		"location":           firmwareURL,
-		"retrieveDateTime":   retrieveTime.Format(time.RFC3339),
-		"installDateTime":    installTime.Format(time.RFC3339),
-		"requestId":          requestID,
-		"retries":            3,
-		"retryInterval":      30,
+		"location":            firmwareURL,
+		"retrieveDateTime":    retrieveTime.Format(time.RFC3339),
+		"installDateTime":     installTime.Format(time.RFC3339),
+		"requestId":           requestID,
+		"retries":             3,
+		"retryInterval":       30,
 		"signing_certificate": "-----BEGIN CERTIFICATE-----\nMIIBkTCB+wIJAKHHCgVZU4pUMA0GCSqGSIb3DQEBCwUAMBExDzANBgNVBAMMBnRl\nc3RjYTAeFw0yMTAxMDEwMDAwMDBaFw0zMTAxMDEwMDAwMDBaMBExDzANBgNVBAMM\nBnRlc3RjYTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAr3Ow8PSxp4pLfGVN\ntDKkqOv6r5lqzJqCdZ8PDQHQX5vBnPvUVGYMp3JzSqKvMhkQTkLYRo8FsVvqvBfV\nXCKLVpXKR5bUV5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5Tq\nR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5TqR5UCAQMCAQIDAQMCAQIDAQMCAQIDAQMC\nAQIDAgAGCCqGSM49BAMCA0cAMEQCIFOl0hLqPELZkqUaVtPR9rMU6B5D7P3xXvVx\nQvXpKvXqAiA5LqT8RmT8RmT8RmT8RmT8RmT8RmT8RmT8RmT8RmT8Rg==\n-----END CERTIFICATE-----",
+		"signature":           "3046022100d5e8c3b8f9c7a2e1d4f5b6a9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0022100a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
 	}
 
 	requestJSON, err := json.MarshalIndent(request, "", "  ")
