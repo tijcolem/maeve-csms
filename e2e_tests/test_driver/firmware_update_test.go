@@ -61,16 +61,18 @@ type FirmwareTestServer struct {
 }
 
 // NewFirmwareTestServer creates a new firmware test server
-func NewFirmwareTestServer(port int, firmwareSize int) (*FirmwareTestServer, error) {
+func NewFirmwareTestServer(port int, firmwarePath string) (*FirmwareTestServer, error) {
 	fts := &FirmwareTestServer{
-		port: port,
+		port:         port,
+		firmwarePath: firmwarePath,
 	}
 
-	// Generate random firmware data
-	fts.firmwareData = make([]byte, firmwareSize)
-	if _, err := rand.Read(fts.firmwareData); err != nil {
-		return nil, fmt.Errorf("generating firmware data: %w", err)
+	// Read firmware data from file
+	data, err := os.ReadFile(firmwarePath)
+	if err != nil {
+		return nil, fmt.Errorf("reading firmware file %s: %w", firmwarePath, err)
 	}
+	fts.firmwareData = data
 
 	// Calculate checksum
 	hash := sha256.Sum256(fts.firmwareData)
@@ -327,7 +329,13 @@ func TestFirmwareUpdateOCPP201(t *testing.T) {
 		fmt.Sscanf(portStr, "%d", &serverPort)
 	}
 
-	firmwareServer, err := NewFirmwareTestServer(serverPort, defaultFirmwareSize)
+	// Path to the firmware file
+	firmwarePath := filepath.Join("..", "data", "EVSE_Firmware_20260202")
+	if _, err := os.Stat(firmwarePath); os.IsNotExist(err) {
+		t.Fatalf("Firmware file not found: %s", firmwarePath)
+	}
+
+	firmwareServer, err := NewFirmwareTestServer(serverPort, firmwarePath)
 	if err != nil {
 		t.Fatalf("Failed to create firmware server: %v", err)
 	}
